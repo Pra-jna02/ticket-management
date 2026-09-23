@@ -2,6 +2,7 @@ package com.ticket.management.controller;
 
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
+import com.ticket.management.entity.enums.Status;
 import com.ticket.management.service.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,4 +48,25 @@ public class TicketController {
         ticketService.deleteTicket(id);
     }
 
+    //Ticket History methods
+
+    @PutMapping("/{ticketId}/assign/{userId}")
+    public TicketResponseDto assignTicket(@PathVariable Long ticketId,
+                                          @PathVariable Long userId){
+
+        return ticketService.assignTicket(ticketId,userId);
+    }
+
+    @PutMapping("/{ticketId}/status/{status}")
+    public TicketResponseDto changeStatus(@PathVariable Long ticketId,
+                                          @PathVariable Status status) {
+
+        return ticketService.changeStatus(ticketId, status);
+    }
+
+    @PutMapping("/{ticketId}/close")
+    public TicketResponseDto closeTicket(@PathVariable Long ticketId) {
+
+        return ticketService.closeTicket(ticketId);
+    }
 }

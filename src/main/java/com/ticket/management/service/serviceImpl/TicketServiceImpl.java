@@ -4,6 +4,7 @@ import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
 import com.ticket.management.entity.Ticket;
 import com.ticket.management.entity.User;
+import com.ticket.management.entity.enums.Role;
 import com.ticket.management.entity.enums.Status;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
@@ -137,4 +138,90 @@ public class TicketServiceImpl implements TicketService {
 
         ticketRepository.delete(ticket);
     }
+
+    @Override
+    public TicketResponseDto assignTicket(Long ticketId, Long userId) {
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(()->new RuntimeException("Ticket not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(()->new RuntimeException("User not found"));
+
+        if(user.getRole()!= Role.SUPPORT_ENGINEER){
+            throw new RuntimeException("Only SUPPORT_ENGINEER can be assigned");
+        }
+
+        ticket.setAssignedTo(user);
+        ticket.setStatus(Status.ASSIGNED);
+
+        Ticket updatedTicket = ticketRepository.save(ticket);
+
+        TicketResponseDto dto = new TicketResponseDto();
+
+        dto.setId(updatedTicket.getId());
+        dto.setTicketNumber(updatedTicket.getTicketNumber());
+        dto.setTitle(updatedTicket.getTitle());
+        dto.setDescription(updatedTicket.getDescription());
+        dto.setPriority(updatedTicket.getPriority());
+        dto.setStatus(updatedTicket.getStatus());
+        dto.setCreatedByName(updatedTicket.getCreatedBy().getName());
+        dto.setCreatedDate(updatedTicket.getCreatedDate());
+
+        return dto;
+    }
+
+    @Override
+    public TicketResponseDto changeStatus(Long ticketId, Status status) {
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(()->new RuntimeException("Ticket not found"));
+
+        ticket.setStatus((status));
+
+        Ticket updatedTicket = ticketRepository.save(ticket);
+
+        TicketResponseDto dto = new TicketResponseDto();
+
+        dto.setId(updatedTicket.getId());
+        dto.setTicketNumber(updatedTicket.getTicketNumber());
+        dto.setTitle(updatedTicket.getTitle());
+        dto.setDescription(updatedTicket.getDescription());
+        dto.setPriority(updatedTicket.getPriority());
+        dto.setStatus(updatedTicket.getStatus());
+        dto.setCreatedByName(updatedTicket.getCreatedBy().getName());
+        dto.setCreatedDate(updatedTicket.getCreatedDate());
+
+        return dto;
+    }
+
+    @Override
+    public TicketResponseDto closeTicket(Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(()->new RuntimeException("Ticket not found"));
+
+        if (ticket.getStatus()!=Status.RESOLVED)
+        {
+            throw new RuntimeException("Ticket must be RESOLVED before closing");
+        }
+
+        ticket.setStatus(Status.CLOSED);
+
+        Ticket updatedTicket = ticketRepository.save(ticket);
+
+        TicketResponseDto dto = new TicketResponseDto();
+
+        dto.setId(updatedTicket.getId());
+        dto.setTicketNumber(updatedTicket.getTicketNumber());
+        dto.setTitle(updatedTicket.getTitle());
+        dto.setDescription(updatedTicket.getDescription());
+        dto.setPriority(updatedTicket.getPriority());
+        dto.setStatus(updatedTicket.getStatus());
+        dto.setCreatedByName(updatedTicket.getCreatedBy().getName());
+        dto.setCreatedDate(updatedTicket.getCreatedDate());
+
+        return dto;
+    }
 }
+
+
