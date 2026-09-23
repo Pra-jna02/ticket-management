@@ -1,5 +1,6 @@
 package com.ticket.management.controller;
 
+import com.ticket.management.dto.TicketHistoryResponseDto;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
 import com.ticket.management.entity.TicketHistory;
@@ -85,7 +86,7 @@ public class TicketController {
     }
 
     @GetMapping("/{ticketId}/history")
-    public List<TicketHistory> getTicketHistory(@PathVariable Long ticketId)
+    public List<TicketHistoryResponseDto> getTicketHistory(@PathVariable Long ticketId)
     {
         return ticketService.getTicketHistory(ticketId);
     }

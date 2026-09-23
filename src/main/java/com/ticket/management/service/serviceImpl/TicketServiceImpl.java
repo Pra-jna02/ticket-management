@@ -1,5 +1,6 @@
 package com.ticket.management.service.serviceImpl;
 
+import com.ticket.management.dto.TicketHistoryResponseDto;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
 import com.ticket.management.entity.Ticket;
@@ -88,7 +89,6 @@ public class TicketServiceImpl implements TicketService {
         ticket.setTitle(request.getTitle());
         ticket.setDescription(request.getDescription());
         ticket.setPriority(request.getPriority());
-        ticket.setCreatedBy(user);
 
         Ticket updatedTicket = ticketRepository.save(ticket);
 
@@ -117,13 +117,17 @@ public class TicketServiceImpl implements TicketService {
 
         Status oldStatus = ticket.getStatus();
 
+        if(ticket.getAssignedTo() != null) {
+            throw new RuntimeException("Ticket is already assigned");
+        }
+
         ticket.setAssignedTo(user);
         ticket.setStatus(Status.ASSIGNED);
 
         Ticket updatedTicket = ticketRepository.save(ticket);
 
         //creating entry in TicketHistory Table
-        createHistory(updatedTicket,oldStatus,Status.ASSIGNED,"Ticket assigned");
+        createHistory(updatedTicket,oldStatus,Status.ASSIGNED,user.getName(),"Ticket assigned");
 
         return mapToResponse(updatedTicket);
     }
@@ -146,7 +150,7 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket updatedTicket = ticketRepository.save(ticket);
 
-        createHistory(updatedTicket,oldStatus,status,"Status Changed");
+        createHistory(updatedTicket,oldStatus,status,ticket.getAssignedTo().getName(),"Status Changed");
 
         return mapToResponse(updatedTicket);
     }
@@ -167,7 +171,7 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket updatedTicket = ticketRepository.save(ticket);
 
-        createHistory(updatedTicket,oldStatus,Status.CLOSED,"Ticket closed");
+        createHistory(updatedTicket,oldStatus,Status.CLOSED,ticket.getAssignedTo().getName(),"Ticket closed");
 
         return mapToResponse(updatedTicket);
     }
@@ -192,6 +196,7 @@ public class TicketServiceImpl implements TicketService {
                 updatedTicket,
                 oldStatus,
                 Status.REOPENED,
+                ticket.getCreatedBy().getName(),
                 "Ticket reopened");
 
         return mapToResponse(updatedTicket);
@@ -220,14 +225,34 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket updatedTicket = ticketRepository.save(ticket);
 
-        createHistory(updatedTicket,oldStatus,Status.RESOLVED,remarks);
+        createHistory(updatedTicket,oldStatus,Status.RESOLVED,ticket.getAssignedTo().getName(),remarks);
 
         return mapToResponse(updatedTicket);
     }
 
     @Override
-    public List<TicketHistory> getTicketHistory(Long ticketId) {
-        return ticketHistoryRepository.findByTicketId(ticketId);
+    public List<TicketHistoryResponseDto> getTicketHistory(Long ticketId)
+    {
+
+        List<TicketHistory> historyList = ticketHistoryRepository.findByTicketId(ticketId);
+
+        List<TicketHistoryResponseDto> responseList = new ArrayList<>();
+
+        for (TicketHistory history : historyList)
+        {
+            TicketHistoryResponseDto dto = new TicketHistoryResponseDto();
+
+            dto.setId(history.getId());
+            dto.setOldStatus(history.getOldStatus());
+            dto.setNewStatus(history.getNewStatus());
+            dto.setChangedBy(history.getChangedBy());
+            dto.setRemarks(history.getRemarks());
+            dto.setChangedDate(history.getChangedDate());
+
+            responseList.add(dto);
+        }
+
+        return responseList;
     }
 
     //Status validation method
@@ -280,12 +305,13 @@ public class TicketServiceImpl implements TicketService {
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
-    private void createHistory(Ticket ticket,Status oldStaus,Status newStatus,String remarks)
+    private void createHistory(Ticket ticket,Status oldStatus,Status newStatus,String changedBy,String remarks)
     {
         TicketHistory history = TicketHistory.builder()
                 .ticket(ticket)
-                .oldStatus(oldStaus)
+                .oldStatus(oldStatus)
                 .newStatus(newStatus)
+                .changedBy(changedBy)
                 .remarks(remarks)
                 .changedDate(LocalDateTime.now())
                 .build();

@@ -1,8 +1,8 @@
 package com.ticket.management.service;
 
+import com.ticket.management.dto.TicketHistoryResponseDto;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
-import com.ticket.management.entity.TicketHistory;
 import com.ticket.management.entity.enums.Status;
 
 import java.util.List;
@@ -30,6 +30,6 @@ public interface TicketService {
 
     TicketResponseDto resolveTicket(Long ticketId, String remarks);
 
-    List<TicketHistory> getTicketHistory(Long ticketId);
+    List<TicketHistoryResponseDto> getTicketHistory(Long ticketId);
 
 }
