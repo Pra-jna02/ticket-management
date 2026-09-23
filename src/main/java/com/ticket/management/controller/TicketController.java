@@ -2,6 +2,7 @@ package com.ticket.management.controller;
 
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
+import com.ticket.management.entity.TicketHistory;
 import com.ticket.management.entity.enums.Status;
 import com.ticket.management.service.TicketService;
 import jakarta.validation.Valid;
@@ -81,5 +82,11 @@ public class TicketController {
                                            @RequestParam(required = false) String remarks) {
 
         return ticketService.resolveTicket(ticketId, remarks);
+    }
+
+    @GetMapping("/{ticketId}/history")
+    public List<TicketHistory> getTicketHistory(@PathVariable Long ticketId)
+    {
+        return ticketService.getTicketHistory(ticketId);
     }
 }

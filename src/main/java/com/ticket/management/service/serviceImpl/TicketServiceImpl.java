@@ -225,6 +225,11 @@ public class TicketServiceImpl implements TicketService {
         return mapToResponse(updatedTicket);
     }
 
+    @Override
+    public List<TicketHistory> getTicketHistory(Long ticketId) {
+        return ticketHistoryRepository.findByTicketId(ticketId);
+    }
+
     //Status validation method
     private boolean isValidTransition(Status currentStatus, Status newStatus)
     {
