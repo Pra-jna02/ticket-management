@@ -3,10 +3,12 @@ package com.ticket.management.service.serviceImpl;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
 import com.ticket.management.entity.Ticket;
+import com.ticket.management.entity.TicketHistory;
 import com.ticket.management.entity.User;
 import com.ticket.management.entity.enums.Priority;
 import com.ticket.management.entity.enums.Role;
 import com.ticket.management.entity.enums.Status;
+import com.ticket.management.repository.TicketHistoryRepository;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
 import com.ticket.management.service.TicketService;
@@ -25,6 +27,9 @@ public class TicketServiceImpl implements TicketService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TicketHistoryRepository ticketHistoryRepository;
 
     @Override
     public TicketResponseDto createTicket(TicketRequestDto request) {
@@ -110,10 +115,15 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Only SUPPORT_ENGINEER can be assigned");
         }
 
+        Status oldStatus = ticket.getStatus();
+
         ticket.setAssignedTo(user);
         ticket.setStatus(Status.ASSIGNED);
 
         Ticket updatedTicket = ticketRepository.save(ticket);
+
+        //creating entry in TicketHistory Table
+        createHistory(updatedTicket,oldStatus,Status.ASSIGNED,"Ticket assigned");
 
         return mapToResponse(updatedTicket);
     }
@@ -129,9 +139,14 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Invalid status transition");
         }
 
-        ticket.setStatus((status));
+        Status oldStatus = ticket.getStatus();
+
+        ticket.setStatus(status);
+        ticket.setUpdatedDate(LocalDateTime.now());
 
         Ticket updatedTicket = ticketRepository.save(ticket);
+
+        createHistory(updatedTicket,oldStatus,status,"Status Changed");
 
         return mapToResponse(updatedTicket);
     }
@@ -146,9 +161,13 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Ticket must be RESOLVED before closing");
         }
 
+        Status oldStatus = ticket.getStatus();
+
         ticket.setStatus(Status.CLOSED);
 
         Ticket updatedTicket = ticketRepository.save(ticket);
+
+        createHistory(updatedTicket,oldStatus,Status.CLOSED,"Ticket closed");
 
         return mapToResponse(updatedTicket);
     }
@@ -163,9 +182,17 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Only CLOSED tickets can be reopened");
         }
 
+        Status oldStatus = ticket.getStatus();
+
         ticket.setStatus(Status.REOPENED);
 
         Ticket updatedTicket = ticketRepository.save(ticket);
+
+        createHistory(
+                updatedTicket,
+                oldStatus,
+                Status.REOPENED,
+                "Ticket reopened");
 
         return mapToResponse(updatedTicket);
     }
@@ -185,11 +212,15 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Critical tickets require remarks");
         }
 
+        Status oldStatus = ticket.getStatus();
+
         ticket.setStatus(Status.RESOLVED);
 
         ticket.setResolvedDate(LocalDateTime.now());
 
         Ticket updatedTicket = ticketRepository.save(ticket);
+
+        createHistory(updatedTicket,oldStatus,Status.RESOLVED,remarks);
 
         return mapToResponse(updatedTicket);
     }
@@ -242,6 +273,19 @@ public class TicketServiceImpl implements TicketService {
 
         return ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
+    }
+
+    private void createHistory(Ticket ticket,Status oldStaus,Status newStatus,String remarks)
+    {
+        TicketHistory history = TicketHistory.builder()
+                .ticket(ticket)
+                .oldStatus(oldStaus)
+                .newStatus(newStatus)
+                .remarks(remarks)
+                .changedDate(LocalDateTime.now())
+                .build();
+
+        ticketHistoryRepository.save(history);
     }
 }
 
