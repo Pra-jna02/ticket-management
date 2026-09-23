@@ -24,4 +24,9 @@ public interface TicketService {
     TicketResponseDto changeStatus(Long ticketId, Status status);
 
     TicketResponseDto closeTicket(Long ticketId);
+
+    TicketResponseDto reopenTicket(Long ticketId);
+
+    TicketResponseDto resolveTicket(Long ticketId, String remarks);
+
 }

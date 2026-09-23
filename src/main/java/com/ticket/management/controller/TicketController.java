@@ -69,4 +69,17 @@ public class TicketController {
 
         return ticketService.closeTicket(ticketId);
     }
+
+    @PutMapping("/{ticketId}/reopen")
+    public TicketResponseDto reopenTicket(@PathVariable Long ticketId) {
+
+        return ticketService.reopenTicket(ticketId);
+    }
+
+    @PutMapping("/{ticketId}/resolve")
+    public TicketResponseDto resolveTicket(@PathVariable Long ticketId,
+                                           @RequestParam(required = false) String remarks) {
+
+        return ticketService.resolveTicket(ticketId, remarks);
+    }
 }
