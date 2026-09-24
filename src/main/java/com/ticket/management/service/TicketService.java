@@ -35,7 +35,5 @@ public interface TicketService {
 
 
     //Search or filter functionality
-    List<TicketResponseDto> getTicketByStatus(Status status);
-
-    List<TicketResponseDto> getTicketByPriority(Priority priority);
+    List<TicketResponseDto> searchTickets(Status status, Priority priority);
 }

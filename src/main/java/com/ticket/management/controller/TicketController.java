@@ -92,15 +92,11 @@ public class TicketController {
         return ticketService.getTicketHistory(ticketId);
     }
 
-    @GetMapping("/search/status")
-    public List<TicketResponseDto> getTicketByStatus(@RequestParam Status status)
+    @GetMapping("/search")
+    public List<TicketResponseDto> searchTickets(@RequestParam(required = false) Status status,
+                                                 @RequestParam(required = false) Priority priority)
     {
-        return ticketService.getTicketByStatus(status);
-    }
 
-    @GetMapping("/search/priority")
-    public List<TicketResponseDto> getTicketByPriority(@RequestParam Priority priority)
-    {
-        return ticketService.getTicketByPriority(priority);
+        return ticketService.searchTickets(status, priority);
     }
 }

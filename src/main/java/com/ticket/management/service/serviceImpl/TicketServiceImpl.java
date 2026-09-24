@@ -15,6 +15,7 @@ import com.ticket.management.repository.TicketHistoryRepository;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
 import com.ticket.management.service.TicketService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -105,6 +106,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponseDto assignTicket(Long ticketId, Long userId) {
 
         Ticket ticket = getTicket(ticketId);
@@ -134,6 +136,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponseDto changeStatus(Long ticketId, Status status) {
 
         Ticket ticket = getTicket(ticketId);
@@ -157,6 +160,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponseDto closeTicket(Long ticketId) {
 
         Ticket ticket = getTicket(ticketId);
@@ -178,6 +182,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponseDto reopenTicket(Long ticketId) {
 
         Ticket ticket = getTicket(ticketId);
@@ -204,6 +209,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponseDto resolveTicket(Long ticketId, String remarks) {
 
         Ticket ticket = getTicket(ticketId);
@@ -257,28 +263,23 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public List<TicketResponseDto> getTicketByStatus(Status status) {
+    public List<TicketResponseDto> searchTickets(Status status, Priority priority)
+    {
+        List<Ticket> tickets;
 
-        List<Ticket> tickets = ticketRepository.findByStatus(status);
-
-        List<TicketResponseDto> response = new ArrayList<>();
-
-        for(Ticket ticket : tickets)
-        {
-            response.add(mapToResponse(ticket));
+        if (status != null) {
+            tickets = ticketRepository.findByStatus(status);
         }
-        return response;
-    }
-
-    @Override
-    public List<TicketResponseDto> getTicketByPriority(Priority priority) {
-
-        List<Ticket> tickets = ticketRepository.findByPriority(priority);
+        else if (priority != null) {
+            tickets = ticketRepository.findByPriority(priority);
+        }
+        else {
+            tickets = ticketRepository.findAll();
+        }
 
         List<TicketResponseDto> response = new ArrayList<>();
 
-        for(Ticket ticket : tickets)
-        {
+        for (Ticket ticket : tickets) {
             response.add(mapToResponse(ticket));
         }
         return response;
