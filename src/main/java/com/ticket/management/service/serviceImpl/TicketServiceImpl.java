@@ -9,13 +9,14 @@ import com.ticket.management.entity.User;
 import com.ticket.management.entity.enums.Priority;
 import com.ticket.management.entity.enums.Role;
 import com.ticket.management.entity.enums.Status;
+import com.ticket.management.exception.InvalidOperationException;
+import com.ticket.management.exception.ResourceNotFoundException;
 import com.ticket.management.repository.TicketHistoryRepository;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
 import com.ticket.management.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class TicketServiceImpl implements TicketService {
     public TicketResponseDto createTicket(TicketRequestDto request) {
 
         User user = userRepository.findById(request.getCreatedBy())
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
 
         Ticket ticket = Ticket.builder()
                 .ticketNumber("TKT-"+System.currentTimeMillis())
@@ -109,16 +110,16 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = getTicket(ticketId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
 
         if(user.getRole()!= Role.SUPPORT_ENGINEER){
-            throw new RuntimeException("Only SUPPORT_ENGINEER can be assigned");
+            throw new InvalidOperationException("Only SUPPORT_ENGINEER can be assigned");
         }
 
         Status oldStatus = ticket.getStatus();
 
         if(ticket.getAssignedTo() != null) {
-            throw new RuntimeException("Ticket is already assigned");
+            throw new InvalidOperationException("Ticket is already assigned");
         }
 
         ticket.setAssignedTo(user);
@@ -140,7 +141,7 @@ public class TicketServiceImpl implements TicketService {
         //Checking the status is valid
         if(!isValidTransition(ticket.getStatus(),status))
         {
-            throw new RuntimeException("Invalid status transition");
+            throw new InvalidOperationException("Invalid status transition");
         }
 
         Status oldStatus = ticket.getStatus();
@@ -162,7 +163,7 @@ public class TicketServiceImpl implements TicketService {
 
         if (ticket.getStatus()!=Status.RESOLVED)
         {
-            throw new RuntimeException("Ticket must be RESOLVED before closing");
+            throw new InvalidOperationException("Ticket must be RESOLVED before closing");
         }
 
         Status oldStatus = ticket.getStatus();
@@ -183,7 +184,7 @@ public class TicketServiceImpl implements TicketService {
 
         if(ticket.getStatus()!=Status.CLOSED)
         {
-            throw new RuntimeException("Only CLOSED tickets can be reopened");
+            throw new InvalidOperationException("Only CLOSED tickets can be reopened");
         }
 
         Status oldStatus = ticket.getStatus();
@@ -209,12 +210,12 @@ public class TicketServiceImpl implements TicketService {
 
         if(ticket.getStatus()!=Status.IN_PROGRESS)
         {
-            throw new RuntimeException("Only IN_PROGRESS tickets can be resolved");
+            throw new InvalidOperationException("Only IN_PROGRESS tickets can be resolved");
         }
 
         if(ticket.getPriority()== Priority.CRITICAL && (remarks==null || remarks.isBlank()))
         {
-            throw new RuntimeException("Critical tickets require remarks");
+            throw new InvalidOperationException("Critical tickets require remarks");
         }
 
         Status oldStatus = ticket.getStatus();
@@ -302,7 +303,7 @@ public class TicketServiceImpl implements TicketService {
     private Ticket getTicket(Long ticketId) {
 
         return ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
     }
 
     private void createHistory(Ticket ticket,Status oldStatus,Status newStatus,String changedBy,String remarks)

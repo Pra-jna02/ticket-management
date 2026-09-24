@@ -3,11 +3,11 @@ package com.ticket.management.service.serviceImpl;
 import com.ticket.management.dto.UserRequestDto;
 import com.ticket.management.dto.UserResponseDto;
 import com.ticket.management.entity.User;
+import com.ticket.management.exception.ResourceNotFoundException;
 import com.ticket.management.repository.UserRepository;
 import com.ticket.management.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,15 +29,7 @@ public class UserServiceImpl implements UserService {
 
         User saveUser = userRepository.save(user);
 
-        UserResponseDto response = new UserResponseDto();
-        response.setId(saveUser.getId());
-        response.setEmployeeId(saveUser.getEmployeeId());
-        response.setName(saveUser.getName());
-        response.setEmail(saveUser.getEmail());
-        response.setDepartment(saveUser.getDepartment());
-        response.setRole(saveUser.getRole());
-
-        return response;
+       return mapToResponse(saveUser);
     }
 
     @Override
@@ -48,13 +40,7 @@ public class UserServiceImpl implements UserService {
 
         for(User user:users)
         {
-            UserResponseDto dto = new UserResponseDto();
-            dto.setId(user.getId());
-            dto.setEmployeeId(user.getEmployeeId());
-            dto.setName((user.getName()));
-            dto.setEmail(user.getEmail());
-            dto.setDepartment(user.getDepartment());
-            dto.setRole(user.getRole());
+            UserResponseDto dto = mapToResponse(user);
 
             responseList.add(dto);
         }
@@ -65,25 +51,16 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(()->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
-        UserResponseDto dto = new UserResponseDto();
-
-        dto.setId(user.getId());
-        dto.setEmployeeId(user.getEmployeeId());
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setDepartment(user.getDepartment());
-        dto.setRole(user.getRole());
-
-        return dto;
+        return mapToResponse(user);
     }
 
     @Override
     public UserResponseDto updateUser(Long id, UserRequestDto request) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
 
         user.setEmployeeId(request.getEmployeeId());
         user.setName(request.getName());
@@ -93,24 +70,34 @@ public class UserServiceImpl implements UserService {
 
         User updatedUser = userRepository.save(user);
 
-        UserResponseDto dto = new UserResponseDto();
-
-        dto.setId(updatedUser.getId());
-        dto.setEmployeeId(updatedUser.getEmployeeId());
-        dto.setName(updatedUser.getName());
-        dto.setEmail(updatedUser.getEmail());
-        dto.setDepartment(updatedUser.getDepartment());
-        dto.setRole(updatedUser.getRole());
-
-        return dto;
+        return mapToResponse(updatedUser);
     }
 
     @Override
     public void deleteUser(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
 
         userRepository.delete(user);
+    }
+
+
+    private UserResponseDto mapToResponse(User user) {
+
+        UserResponseDto dto = new UserResponseDto();
+
+        if (user == null) {
+            return dto;
+        }
+
+        dto.setId(user.getId());
+        dto.setEmployeeId(user.getEmployeeId());
+        dto.setName((user.getName()));
+        dto.setEmail(user.getEmail());
+        dto.setDepartment(user.getDepartment());
+        dto.setRole(user.getRole());
+
+        return dto;
     }
 }
