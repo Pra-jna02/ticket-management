@@ -92,14 +92,14 @@ public class TicketController {
         return ticketService.getTicketHistory(ticketId);
     }
 
-    @GetMapping("/status/{status}")
-    public List<TicketResponseDto> getTicketByStatus(@PathVariable Status status)
+    @GetMapping("/search/status")
+    public List<TicketResponseDto> getTicketByStatus(@RequestParam Status status)
     {
         return ticketService.getTicketByStatus(status);
     }
 
-    @GetMapping("/priority/{priority}")
-    public List<TicketResponseDto> getTicketByPriority(@PathVariable Priority priority)
+    @GetMapping("/search/priority")
+    public List<TicketResponseDto> getTicketByPriority(@RequestParam Priority priority)
     {
         return ticketService.getTicketByPriority(priority);
     }
