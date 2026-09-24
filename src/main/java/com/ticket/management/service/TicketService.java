@@ -3,6 +3,7 @@ package com.ticket.management.service;
 import com.ticket.management.dto.TicketHistoryResponseDto;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
+import com.ticket.management.entity.enums.Priority;
 import com.ticket.management.entity.enums.Status;
 
 import java.util.List;
@@ -32,4 +33,9 @@ public interface TicketService {
 
     List<TicketHistoryResponseDto> getTicketHistory(Long ticketId);
 
+
+    //Search or filter functionality
+    List<TicketResponseDto> getTicketByStatus(Status status);
+
+    List<TicketResponseDto> getTicketByPriority(Priority priority);
 }

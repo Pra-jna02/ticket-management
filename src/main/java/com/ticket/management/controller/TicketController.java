@@ -4,6 +4,7 @@ import com.ticket.management.dto.TicketHistoryResponseDto;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
 import com.ticket.management.entity.TicketHistory;
+import com.ticket.management.entity.enums.Priority;
 import com.ticket.management.entity.enums.Status;
 import com.ticket.management.service.TicketService;
 import jakarta.validation.Valid;
@@ -89,5 +90,17 @@ public class TicketController {
     public List<TicketHistoryResponseDto> getTicketHistory(@PathVariable Long ticketId)
     {
         return ticketService.getTicketHistory(ticketId);
+    }
+
+    @GetMapping("/status/{status}")
+    public List<TicketResponseDto> getTicketByStatus(@PathVariable Status status)
+    {
+        return ticketService.getTicketByStatus(status);
+    }
+
+    @GetMapping("/priority/{priority}")
+    public List<TicketResponseDto> getTicketByPriority(@PathVariable Priority priority)
+    {
+        return ticketService.getTicketByPriority(priority);
     }
 }
