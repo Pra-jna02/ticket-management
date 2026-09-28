@@ -60,6 +60,13 @@ public class TicketController {
         return ticketService.assignTicket(ticketId,userId);
     }
 
+    @PutMapping("/{ticketId}/auto-assign")
+    public TicketResponseDto autoAssignTicket(@PathVariable Long ticketId)
+    {
+        return ticketService.autoAssignTicket(ticketId);
+
+    }
+
     @PutMapping("/{ticketId}/status/{status}")
     public TicketResponseDto changeStatus(@PathVariable Long ticketId,
                                           @PathVariable Status status) {

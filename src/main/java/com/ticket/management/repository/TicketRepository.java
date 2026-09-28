@@ -1,6 +1,7 @@
 package com.ticket.management.repository;
 
 import com.ticket.management.entity.Ticket;
+import com.ticket.management.entity.User;
 import com.ticket.management.entity.enums.Priority;
 import com.ticket.management.entity.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,5 @@ public interface TicketRepository extends JpaRepository<Ticket,Long> {
 
     List<Ticket> findByPriority(Priority priority);
 
+    long countByAssignedTo(User user);
 }

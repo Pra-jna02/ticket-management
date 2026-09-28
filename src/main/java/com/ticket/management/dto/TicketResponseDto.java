@@ -21,6 +21,8 @@ public class TicketResponseDto {
 
     private Status status;
 
+    private String assignedToName;
+
     private String createdByName;
 
     private LocalDateTime createdDate;

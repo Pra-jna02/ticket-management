@@ -23,6 +23,8 @@ public interface TicketService {
     //TicketHistory methods
     TicketResponseDto assignTicket(Long ticketId, Long userId);
 
+    TicketResponseDto autoAssignTicket(Long ticketId);
+
     TicketResponseDto changeStatus(Long ticketId, Status status);
 
     TicketResponseDto closeTicket(Long ticketId);

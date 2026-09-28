@@ -15,9 +15,14 @@ import com.ticket.management.repository.TicketHistoryRepository;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
 import com.ticket.management.service.TicketService;
+import com.ticket.management.strategy.TicketAssignmentStrategy;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +38,10 @@ public class TicketServiceImpl implements TicketService {
 
     @Autowired
     private TicketHistoryRepository ticketHistoryRepository;
+
+    @Autowired
+    @Qualifier("leastLoadedStrategy")
+    private TicketAssignmentStrategy ticketAssignmentStrategy;
 
     @Override
     public TicketResponseDto createTicket(TicketRequestDto request) {
@@ -131,6 +140,34 @@ public class TicketServiceImpl implements TicketService {
 
         //creating entry in TicketHistory Table
         createHistory(updatedTicket,oldStatus,Status.ASSIGNED,user.getName(),"Ticket assigned");
+
+        return mapToResponse(updatedTicket);
+    }
+
+    // To implement Qualifier
+    @Override
+    @Transactional
+    public TicketResponseDto autoAssignTicket(Long ticketId)
+    {
+
+        Ticket ticket = getTicket(ticketId);
+
+        if(ticket.getAssignedTo()!=null)
+        {
+            throw new InvalidOperationException("Ticket is already assigned");
+        }
+
+        User engineer = ticketAssignmentStrategy.assignEngineer();
+
+        Status oldStatus = ticket.getStatus();
+
+        ticket.setAssignedTo(engineer);
+        ticket.setStatus(Status.ASSIGNED);
+
+        Ticket updatedTicket = ticketRepository.save(ticket);
+
+        //creating entry in TicketHistory Table
+        createHistory(updatedTicket,oldStatus,Status.ASSIGNED,engineer.getName(),"Ticket assigned");
 
         return mapToResponse(updatedTicket);
     }
@@ -322,6 +359,11 @@ public class TicketServiceImpl implements TicketService {
         if (ticket.getCreatedBy() != null) {
 
             dto.setCreatedByName(ticket.getCreatedBy().getName());
+        }
+
+        if (ticket.getAssignedTo() != null) {
+            dto.setAssignedToName(
+                    ticket.getAssignedTo().getName());
         }
 
         dto.setCreatedDate(ticket.getCreatedDate());
