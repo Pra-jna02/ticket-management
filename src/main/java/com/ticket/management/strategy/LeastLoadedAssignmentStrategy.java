@@ -2,6 +2,7 @@ package com.ticket.management.strategy;
 
 import com.ticket.management.entity.User;
 import com.ticket.management.entity.enums.Role;
+import com.ticket.management.entity.enums.Status;
 import com.ticket.management.exception.ResourceNotFoundException;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
@@ -29,13 +30,18 @@ public class LeastLoadedAssignmentStrategy implements TicketAssignmentStrategy{
             throw new ResourceNotFoundException("No support engineers available");
         }
 
+        List<Status> activeStatuses = List.of(
+                        Status.ASSIGNED,
+                        Status.IN_PROGRESS,
+                        Status.REOPENED
+                );
         User leastLoadedEngineer = engineers.getFirst();
 
-        long minTickets = ticketRepository.countByAssignedTo(leastLoadedEngineer);
+        long minTickets = ticketRepository.countByAssignedToAndStatusIn(leastLoadedEngineer, activeStatuses);
 
         for(User engineer : engineers)
         {
-            long ticketCount = ticketRepository.countByAssignedTo(engineer);
+            long ticketCount = ticketRepository.countByAssignedToAndStatusIn(engineer, activeStatuses);
 
             if(ticketCount < minTickets)
             {

@@ -16,5 +16,5 @@ public interface TicketRepository extends JpaRepository<Ticket,Long> {
 
     List<Ticket> findByPriority(Priority priority);
 
-    long countByAssignedTo(User user);
+    long countByAssignedToAndStatusIn(User user, List<Status> statuses);
 }
