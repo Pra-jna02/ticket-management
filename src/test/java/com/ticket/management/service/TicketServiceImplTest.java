@@ -504,7 +504,7 @@ public class TicketServiceImplTest {
 
         assertEquals(1, response.size());
 
-        assertEquals(Status.OPEN, response.get(0).getStatus());
+        assertEquals(Status.OPEN, response.getFirst().getStatus());
 
         verify(ticketRepository, times(1))
                 .findByStatus(Status.OPEN);
@@ -522,16 +522,13 @@ public class TicketServiceImplTest {
                 .thenReturn(List.of(ticket));
 
         //Act
-        List<TicketResponseDto> response =
-                ticketService.searchTickets(
-                        null,
-                        Priority.HIGH);
+        List<TicketResponseDto> response = ticketService.searchTickets(null, Priority.HIGH);
 
         assertNotNull(response);
 
         assertEquals(1, response.size());
 
-        assertEquals(Priority.HIGH, response.get(0).getPriority());
+        assertEquals(Priority.HIGH, response.getFirst().getPriority());
 
         verify(ticketRepository, times(1))
                 .findByPriority(Priority.HIGH);
@@ -549,8 +546,8 @@ public class TicketServiceImplTest {
         when(ticketRepository.findAll())
                 .thenReturn(List.of(ticket1, ticket2));
 
-        List<TicketResponseDto> response =
-                ticketService.searchTickets(null, null);
+        //Act
+        List<TicketResponseDto> response = ticketService.searchTickets(null, null);
 
         assertNotNull(response);
 
