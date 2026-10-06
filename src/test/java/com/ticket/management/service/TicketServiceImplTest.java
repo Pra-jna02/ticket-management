@@ -13,6 +13,7 @@ import com.ticket.management.repository.TicketHistoryRepository;
 import com.ticket.management.repository.TicketRepository;
 import com.ticket.management.repository.UserRepository;
 import com.ticket.management.service.serviceImpl.TicketServiceImpl;
+import com.ticket.management.strategy.TicketAssignmentStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +38,9 @@ public class TicketServiceImplTest {
 
     @Mock
     private TicketHistoryRepository ticketHistoryRepository;
+
+    @Mock
+    private TicketAssignmentStrategy ticketAssignmentStrategy;
 
     @InjectMocks
     private TicketServiceImpl ticketService;
@@ -238,6 +242,45 @@ public class TicketServiceImplTest {
         assertEquals("Only SUPPORT_ENGINEER can be assigned", exception.getMessage());
 
         verify(ticketRepository, never()).save(any(Ticket.class));
+    }
+
+    @Test
+    void shouldAutoAssignTicketSuccessfully() {
+
+        //Arrange
+        User engineer = new User();
+        engineer.setId(2L);
+        engineer.setName("Krishna");
+        engineer.setRole(Role.SUPPORT_ENGINEER);
+
+        Ticket ticket = new Ticket();
+        ticket.setId(1L);
+        ticket.setStatus(Status.OPEN);
+
+        when(ticketRepository.findById(1L))
+                .thenReturn(Optional.of(ticket));
+
+        when(ticketAssignmentStrategy.assignEngineer())
+                .thenReturn(engineer);
+
+        when(ticketRepository.save(any(Ticket.class)))
+                .thenReturn(ticket);
+
+        //Act
+        TicketResponseDto response = ticketService.autoAssignTicket(1L);
+
+        //Assert
+        assertNotNull(response);
+
+        assertEquals(Status.ASSIGNED, ticket.getStatus());
+
+        assertEquals(engineer.getId(), ticket.getAssignedTo().getId());
+
+        verify(ticketAssignmentStrategy, times(1))
+                .assignEngineer();
+
+        verify(ticketRepository, times(1))
+                .save(any(Ticket.class));
     }
 
     @Test
