@@ -3,7 +3,6 @@ package com.ticket.management.controller;
 import com.ticket.management.dto.TicketHistoryResponseDto;
 import com.ticket.management.dto.TicketRequestDto;
 import com.ticket.management.dto.TicketResponseDto;
-import com.ticket.management.entity.TicketHistory;
 import com.ticket.management.entity.enums.Priority;
 import com.ticket.management.entity.enums.Status;
 import com.ticket.management.service.TicketService;
